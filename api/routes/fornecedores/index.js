@@ -26,8 +26,8 @@ router.post('/', async(requisicao, resposta, proximo) => {
         resposta.send(
             serializador.serializar(fornecedor)
         )
-    } catch (erro) {
-        proximo(erro)
+    } catch (error) {
+        proximo(error)
     }
 })
 
@@ -43,8 +43,8 @@ router.get('/:idFornecedor', async(requisicao, resposta, proximo) => {
         resposta.send(
             serializador.serializar(fornecedor)
         )
-    } catch (erro) {
-        proximo(erro)
+    } catch (error) {
+        proximo(error)
     }
 })
 
@@ -57,8 +57,8 @@ router.put('/:idFornecedor', async(requisicao, resposta, proximo) => {
         await fornecedor.atualizar()
         resposta.status(204)
         resposta.end()
-    } catch (erro) {
-        proximo(erro)
+    } catch (error) {
+        proximo(error)
     }
 })
 
@@ -70,12 +70,24 @@ router.delete('/:idFornecedor', async(requisicao, resposta, proximo) => {
         await fornecedor.remover()
         resposta.status(204)
         resposta.end()
-    } catch (erro) {
-        proximo(erro)
+    } catch (error) {
+        proximo(error)
     }
 })
 
 const roteadorProdutos = require('./produtos')
-router.use('/:idFornecedor/produtos', roteadorProdutos)
+const verificarFornecedor = async(req, res, next) => {
+    try {
+        const id = req.params.idFornecedor
+        const fornecedor = new Fornecedor({ id: id })
+        await fornecedor.carregar()
+            //caso o fornecedor exista subistitui a requisicao fornecedor com o encontrado na pesquisa
+        req.fornecedor = fornecedor
+        next()
+    } catch (error) {
+        next(error)
+    }
+}
+router.use('/:idFornecedor/produtos', verificarFornecedor, roteadorProdutos)
 
 module.exports = router
