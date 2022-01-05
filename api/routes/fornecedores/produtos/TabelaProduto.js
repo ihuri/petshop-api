@@ -1,5 +1,6 @@
 const Modelo = require('./ModeloTabelaProduto')
 const instancia = require('../../../db')
+const NaoEncontrado = require('../../../errors/NaoEncontrado')
 
 module.exports = {
     listar(idFornecedor) {
@@ -22,7 +23,7 @@ module.exports = {
         const encontrado = await Modelo.findOne({ where: { id: idProduto, fornecedor: idFornecedor } })
 
         if (!encontrado) {
-            throw new Error('Produto não foi encontrado!')
+            throw new NaoEncontrado('Produto')
         }
 
         return encontrado

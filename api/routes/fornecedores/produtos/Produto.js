@@ -1,4 +1,6 @@
 const Tabela = require('./TabelaProduto')
+const DadosNaoFornecidos = require('../../../errors/DadosNaoFornecidos')
+const CampoInvalido = require('../../../errors/CampoInvalido')
 
 class Produto {
     constructor({ id, titulo, preco, estoque, fornecedor, dataCriacao, dataAtualizacao, versao }) {
@@ -14,10 +16,10 @@ class Produto {
 
     validar() {
         if (typeof this.titulo !== 'string' || this.titulo.length === 0) {
-            throw new Error('O campo titulo esta invalido')
+            throw new CampoInvalido('titulo')
         }
         if (typeof this.preco !== 'number' || this.preco === 0) {
-            throw new Error('O campo preco esta invalido')
+            throw new CampoInvalido('preco')
         }
     }
 
@@ -63,7 +65,7 @@ class Produto {
             dadosParaAtualizar.estoque = this.estoque
         }
         if (Object.keys(dadosParaAtualizar) === 0) {
-            throw new Error('Não foram fornecidos dados para atualizar')
+            throw new DadosNaoFornecidos()
         }
         return Tabela.atualizar({ id: this.id, fornecedor: this.fornecedor }, dadosParaAtualizar)
     }
