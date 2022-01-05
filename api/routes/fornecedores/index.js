@@ -3,75 +3,91 @@ const TabelaFornecedor = require('./TabelaFornecedor')
 const Fornecedor = require('./Fornecedor')
 const SerializadorFornecedor = require('../../Serializador').SerializadorFornecedor
 
-router.get('/', async(requisicao, resposta) => {
+//liberando acesso externo da API
+router.options('/', (req, res) => {
+    res.set('Access-Control-Allow-Origin', 'GET, POST')
+    res.set('Access-Control-Allow-Headers', 'Content-Type')
+    res.status(204)
+    res.end()
+})
+
+router.get('/', async(req, res) => {
     const resultados = await TabelaFornecedor.listar()
-    resposta.status(200)
+    res.status(200)
     const serializador = new SerializadorFornecedor(
-        resposta.getHeader('Content-Type')
+        res.getHeader('Content-Type'), ['empresa']
     )
-    resposta.send(
+    res.send(
         serializador.serializar(resultados)
     )
 })
 
-router.post('/', async(requisicao, resposta, proximo) => {
+router.post('/', async(req, res, next) => {
     try {
-        const dadosRecebidos = requisicao.body
+        const dadosRecebidos = req.body
         const fornecedor = new Fornecedor(dadosRecebidos)
         await fornecedor.criar()
-        resposta.status(201)
+        res.status(201)
         const serializador = new SerializadorFornecedor(
-            resposta.getHeader('Content-Type')
+            res.getHeader('Content-Type'), ['empresa']
         )
-        resposta.send(
+        res.send(
             serializador.serializar(fornecedor)
         )
     } catch (error) {
-        proximo(error)
+        next(error)
     }
 })
 
-router.get('/:idFornecedor', async(requisicao, resposta, proximo) => {
+//liberando acesso externo da API
+router.options('/:idFornecedor', (req, res) => {
+    res.set('Access-Control-Allow-Origin', 'GET, PUT, DELETE')
+    res.set('Access-Control-Allow-Headers', 'Content-Type')
+    res.status(204)
+    res.end()
+})
+
+router.get('/:idFornecedor', async(req, res, next) => {
     try {
-        const id = requisicao.params.idFornecedor
+        const id = req.params.idFornecedor
         const fornecedor = new Fornecedor({ id: id })
         await fornecedor.carregar()
-        resposta.status(200)
+        res.status(200)
         const serializador = new SerializadorFornecedor(
-            resposta.getHeader('Content-Type'), ['email', 'dataCriacao', 'dataAtualizacao', 'versao']
+            res.getHeader('Content-Type'), ['email', 'empresa', 'dataCriacao', 'dataAtualizacao', 'versao']
         )
-        resposta.send(
+        res.send(
             serializador.serializar(fornecedor)
         )
     } catch (error) {
-        proximo(error)
+        next(error)
     }
 })
 
-router.put('/:idFornecedor', async(requisicao, resposta, proximo) => {
+router.put('/:idFornecedor', async(req, res, next) => {
     try {
-        const id = requisicao.params.idFornecedor
-        const dadosRecebidos = requisicao.body
+        const id = req.params.idFornecedor
+        const dadosRecebidos = req.body
         const dados = Object.assign({}, dadosRecebidos, { id: id })
         const fornecedor = new Fornecedor(dados)
         await fornecedor.atualizar()
-        resposta.status(204)
-        resposta.end()
+        res.status(204)
+        res.end()
     } catch (error) {
-        proximo(error)
+        next(error)
     }
 })
 
-router.delete('/:idFornecedor', async(requisicao, resposta, proximo) => {
+router.delete('/:idFornecedor', async(req, res, next) => {
     try {
-        const id = requisicao.params.idFornecedor
+        const id = req.params.idFornecedor
         const fornecedor = new Fornecedor({ id: id })
         await fornecedor.carregar()
         await fornecedor.remover()
-        resposta.status(204)
-        resposta.end()
+        res.status(204)
+        res.end()
     } catch (error) {
-        proximo(error)
+        next(error)
     }
 })
 
@@ -81,7 +97,7 @@ const verificarFornecedor = async(req, res, next) => {
         const id = req.params.idFornecedor
         const fornecedor = new Fornecedor({ id: id })
         await fornecedor.carregar()
-            //caso o fornecedor exista subistitui a requisicao fornecedor com o encontrado na pesquisa
+            //caso o fornecedor exista subistitui a req fornecedor com o encontrado na pesquisa
         req.fornecedor = fornecedor
         next()
     } catch (error) {

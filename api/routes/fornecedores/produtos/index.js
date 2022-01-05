@@ -3,6 +3,14 @@ const Tabela = require('./TabelaProduto')
 const Produto = require('./Produto')
 const Serializador = require('../../../Serializador').SerializadorProduto
 
+//liberando acesso externo da API
+router.options('/', (req, res) => {
+    res.set('Access-Control-Allow-Origin', 'GET, POST')
+    res.set('Access-Control-Allow-Headers', 'Content-Type')
+    res.status(204)
+    res.end()
+})
+
 //listar todos os produtos
 router.get('/', async(req, res) => {
     const produtos = await Tabela.listar(req.fornecedor.id)
@@ -31,6 +39,14 @@ router.post('/', async(req, res, next) => {
     } catch (error) {
         next(error)
     }
+})
+
+//liberando acesso externo da API
+router.options('/:id', (req, res) => {
+    res.set('Access-Control-Allow-Origin', 'GET, PUT, DELETE, HEAD')
+    res.set('Access-Control-Allow-Headers', 'Content-Type')
+    res.status(204)
+    res.end()
 })
 
 //remover um produto
@@ -90,24 +106,31 @@ router.head('/:id', async(req, res, next) => {
 
 //atualizar um produto
 router.put('/:id', async(req, res, next) => {
-    try {
-        const dados = Object.assign({},
-            req.body, {
-                id: req.params.id,
-                fornecedor: req.fornecedor.id
-            }
-        )
-        const produto = new Produto(dados)
-        await produto.atualizar()
-        await produto.carregar()
-        res.set('ETag', produto.versao)
-        const timestamp = (new Date(produto.dataAtualizacao).getTime)
-        res.set('Last-Modified', timestamp)
-        res.status(204)
-        res.end()
-    } catch (error) {
-        next(error)
-    }
+        try {
+            const dados = Object.assign({},
+                req.body, {
+                    id: req.params.id,
+                    fornecedor: req.fornecedor.id
+                }
+            )
+            const produto = new Produto(dados)
+            await produto.atualizar()
+            await produto.carregar()
+            res.set('ETag', produto.versao)
+            const timestamp = (new Date(produto.dataAtualizacao).getTime)
+            res.set('Last-Modified', timestamp)
+            res.status(204)
+            res.end()
+        } catch (error) {
+            next(error)
+        }
+    })
+    //liberando acesso externo da API
+router.options('/:id/diminuir-estoque', (req, res) => {
+    res.set('Access-Control-Allow-Origin', 'POST')
+    res.set('Access-Control-Allow-Headers', 'Content-Type')
+    res.status(204)
+    res.end()
 })
 
 //diminuir estoque produto

@@ -28,9 +28,16 @@ app.use((req, res, next) => {
     next()
 })
 
+//liberando acesso externo da API
+app.use((req, res, next) => {
+    res.set('Access-Control-Allow-Origin', '*')
+    next()
+})
+
 const roteador = require('./routes/fornecedores')
 app.use('/api/fornecedores', roteador)
-
+const roteadorV2 = require('./routes/fornecedores/rotas.v2')
+app.use('/api/v2/fornecedores', roteadorV2)
 app.use((erro, req, res, next) => {
     let status = 500
 
